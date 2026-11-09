@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# ML artifacts: too big for git
+data/
+models/
+mlruns/
+mlartifacts/
+*.pt
+*.pth
+*.onnx
+*.engine
+*.plan
+
+# Secrets
+.env
+
+# Editors / OS
+.vscode/
+.idea/
+Thumbs.db
