@@ -1,0 +1,7 @@
+.venv
+.git
+data
+models
+.ruff_cache
+.pytest_cache
+__pycache__
