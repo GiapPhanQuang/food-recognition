@@ -9,8 +9,10 @@ authors = [
 requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.162.2",
+    "mlflow>=3.18.0",
     "pillow>=13.0.0",
     "python-multipart>=0.0.33",
+    "scikit-learn>=1.9.1",
     "torch==2.15.0",
     "torchvision==0.29.1",
     "uvicorn[standard]>=0.54.0",
