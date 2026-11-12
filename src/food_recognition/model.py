@@ -19,10 +19,22 @@ eval_transform = transforms.Compose(
 )
 
 
-def build_model(num_classes: int, pretrained: bool = True) -> nn.Module:
-    weights = models.ResNet18_Weights.DEFAULT if pretrained else None
-    model = models.resnet18(weights=weights)
-    model.fc = nn.Linear(model.fc.in_features, num_classes)  # new head for our classes
+ARCHS = {
+    "resnet18": (models.resnet18, models.ResNet18_Weights.DEFAULT),
+    "resnet50": (models.resnet50, models.ResNet50_Weights.DEFAULT),
+    "convnext_tiny": (models.convnext_tiny, models.ConvNeXt_Tiny_Weights.DEFAULT),
+    "mobilenet_v3_large": (models.mobilenet_v3_large, models.MobileNet_V3_Large_Weights.DEFAULT),
+}
+
+
+def build_model(arch: str, num_classes: int, pretrained: bool = True) -> nn.Module:
+    factory, weights = ARCHS[arch]
+    model = factory(weights=weights if pretrained else None)
+    if hasattr(model, "fc"):  # ResNet: head is model.fc
+        model.fc = nn.Linear(model.fc.in_features, num_classes)
+    else:  # ConvNeXt / MobileNetV3: head is the last layer of model.classifier
+        last = model.classifier[-1]
+        model.classifier[-1] = nn.Linear(last.in_features, num_classes)
     return model
 
 
@@ -31,7 +43,8 @@ class Predictor:
         checkpoint = torch.load(model_path, map_location=device)
         self.classes: list[str] = checkpoint["classes"]
         self.device = device
-        self.model = build_model(len(self.classes), pretrained=False)
+        arch = checkpoint.get("arch", "resnet18")  # v0.1.0 checkpoints have no "arch" key
+        self.model = build_model(arch, len(self.classes), pretrained=False)
         self.model.load_state_dict(checkpoint["state_dict"])
         self.model.to(device).eval()
 
